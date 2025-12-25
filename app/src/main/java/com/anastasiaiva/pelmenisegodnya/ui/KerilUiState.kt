@@ -15,4 +15,8 @@ sealed class KerilUiState {
         val imageResId: Int,
         val message: String
     ) : KerilUiState()
+
+    data class UpdateAvailable(
+        val remoteVersion: Int
+    ) : KerilUiState()
 }

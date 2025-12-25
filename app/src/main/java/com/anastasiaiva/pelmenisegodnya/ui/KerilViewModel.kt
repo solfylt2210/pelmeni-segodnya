@@ -13,9 +13,11 @@ import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneId
 import com.anastasiaiva.pelmenisegodnya.R
+import com.anastasiaiva.pelmenisegodnya.update.UpdateRepository
+import com.anastasiaiva.pelmenisegodnya.util.VersionUtils
 
 
-class KerilViewModel(private val repository: KerilRepository) : ViewModel() { //тут все ок, это DI: ViewModel нужен репозиторий, чтоб тянуть оттуда данные.
+class KerilViewModel(private val updateRepository: UpdateRepository, private val repository: KerilRepository) : ViewModel() { //тут все ок, это DI: ViewModel нужен репозиторий, чтоб тянуть оттуда данные.
 
     val images = listOf( // тут тоже понятно, это список моих картинок
         R.drawable.slot_1,
@@ -62,6 +64,16 @@ class KerilViewModel(private val repository: KerilRepository) : ViewModel() { //
         return lastDate != today
     }
 
+    fun checkForUpdates(currentVersionCode: Int) {
+        viewModelScope.launch {
+            val remoteVersion = updateRepository.loadRemoteVersion()
+                ?: return@launch
+
+            if (remoteVersion > currentVersionCode) {
+                _uiState.value = KerilUiState.UpdateAvailable(remoteVersion)
+            }
+        }
+    }
     @RequiresApi(Build.VERSION_CODES.O)
     fun onButtonClicked() {
         val lastTimestamp = repository.getLastTimestamp()

@@ -3,6 +3,7 @@ package com.anastasiaiva.pelmenisegodnya.ui
 import android.os.Build
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -11,25 +12,42 @@ import kotlinx.coroutines.launch
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.anastasiaiva.pelmenisegodnya.databinding.ActivityMainBinding
-
 import com.anastasiaiva.pelmenisegodnya.repository.KerilRepository
+import com.anastasiaiva.pelmenisegodnya.update.UpdateRepository
+import com.anastasiaiva.pelmenisegodnya.util.VersionUtils
 
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding // создаем объект, который прочитает XML и заберет оттуда нужное для UI, инициализация при первом обращении
     private lateinit var viewModel: KerilViewModel // создаем объект "управляющего логикой", инициализация при первом обращении
-    @RequiresApi(Build.VERSION_CODES.O)
+
+    @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreate(savedInstanceState: Bundle?) { // метод переопределен из Context, что делается при создании/пересоздании Activity
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)// инициализируем переменную binding
         setContentView(binding.root) // говорим, что корневая тема в XML, смотри оттуда
 
+        val versionCode = VersionUtils.getVersionCode(this)
+        val versionName = VersionUtils.getVersionName(this)
+
+        Toast.makeText(
+            this,
+            "Версия: $versionName ($versionCode)",
+            Toast.LENGTH_LONG
+        ).show()
+
+
         val preferences = getSharedPreferences( // забираем из системы данные, в т.ч. о дате
             "date_prefs",
             MODE_PRIVATE
         )
-        val repository = KerilRepository(preferences) // создаем объект репо, передаем туда системную инфу, в т.ч. дату
-        val factory = KerilViewModelFactory(repository) //DI, не совсем помню, зачем мы это добавили. В общих чертах, чтобы вручную не внедрять зависимости в Activity
+        val repository = KerilRepository(preferences)
+        val updateRepository = UpdateRepository()
+
+        val factory = KerilViewModelFactory(
+            repository = repository,
+            updateRepository = updateRepository
+        )
         viewModel = ViewModelProvider(this, factory)[KerilViewModel::class.java] // вот тут когда зависимости добавлены, инициализируем объект viewModel. Это все еще для меня сложновато, но в общих чертах понимаю.
 
         binding.button.setOnClickListener {
@@ -86,6 +104,17 @@ class MainActivity : AppCompatActivity() {
                             binding.resultText.text = state.message
 
                             animateResultImage()
+                        }
+
+                        is KerilUiState.UpdateAvailable -> {
+                            // пока просто лог / заглушка
+                            // UI не трогаем, красиво не делаем
+
+                            Toast.makeText(
+                                this@MainActivity,
+                                "Доступна новая версия: ${state.remoteVersion}",
+                                Toast.LENGTH_LONG
+                            ).show()
                         }
                     }
                 }
