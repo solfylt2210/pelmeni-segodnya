@@ -8,7 +8,8 @@ sealed class KerilUiState {
 
     data class Result(
         val imageResId: Int,
-        val phrase: String
+        val phrase: String,
+        val endingPhrase: String
     ) : KerilUiState()
 
     data class AlreadyUsedToday(
@@ -16,7 +17,4 @@ sealed class KerilUiState {
         val message: String
     ) : KerilUiState()
 
-    data class UpdateAvailable(
-        val remoteVersion: Int
-    ) : KerilUiState()
 }

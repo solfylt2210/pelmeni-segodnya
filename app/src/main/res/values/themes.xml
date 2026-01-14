@@ -1,11 +1,9 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.MyFirstProject" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <item name="colorPrimary">@color/primary</item>
-        <item name="colorOnPrimary">@color/onPrimary</item>
+ <!-- Base application theme. -->
+    <resources>
+        <style name="Base.Theme.MyFirstProject" parent="Theme.Material3.DayNight.NoActionBar">
+            <item name="colorPrimary">@color/primary</item>
+            <item name="colorOnPrimary">@color/onPrimary</item>
+        </style>
 
-    </style>
-
-    <style name="Theme.MyFirstProject" parent="Base.Theme.MyFirstProject" />
-</resources>
+        <style name="Theme.MyFirstProject" parent="Base.Theme.MyFirstProject"/>
+    </resources>

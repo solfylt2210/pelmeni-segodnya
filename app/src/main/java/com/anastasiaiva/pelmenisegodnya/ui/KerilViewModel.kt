@@ -17,9 +17,9 @@ import com.anastasiaiva.pelmenisegodnya.update.UpdateRepository
 import com.anastasiaiva.pelmenisegodnya.util.VersionUtils
 
 
-class KerilViewModel(private val updateRepository: UpdateRepository, private val repository: KerilRepository) : ViewModel() { //тут все ок, это DI: ViewModel нужен репозиторий, чтоб тянуть оттуда данные.
+class KerilViewModel(private val updateRepository: UpdateRepository, private val repository: KerilRepository) : ViewModel() {
 
-    val images = listOf( // тут тоже понятно, это список моих картинок
+    val images = listOf(
         R.drawable.slot_1,
         R.drawable.slot_2,
         R.drawable.slot_3,
@@ -42,12 +42,23 @@ class KerilViewModel(private val updateRepository: UpdateRepository, private val
         R.drawable.slot_20,
         R.drawable.slot_21,
         R.drawable.slot_22,
+        R.drawable.slot_30,
+        R.drawable.slot_31,
+        R.drawable.slot_32,
+        R.drawable.slot_33,
+        R.drawable.slot_34,
+        R.drawable.slot_35,
+        R.drawable.slot_36,
+        R.drawable.slot_37,
+        R.drawable.slot_38,
+        R.drawable.slot_39,
+        R.drawable.slot_40
     )
-    private val _uiState = MutableStateFlow<KerilUiState>(KerilUiState.Idle) // тут поняла, подписываемся на слежку за состоянием
-    val uiState: StateFlow<KerilUiState> = _uiState // строчка нужна для безопасной передачи данных
+    private val _uiState = MutableStateFlow<KerilUiState>(KerilUiState.Idle)
+    val uiState: StateFlow<KerilUiState> = _uiState
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun canShowResultToday( // логику функции поняла
+    fun canShowResultToday(
         lastTimestamp: Long?,
         now: Instant
     ): Boolean {
@@ -63,28 +74,33 @@ class KerilViewModel(private val updateRepository: UpdateRepository, private val
 
         return lastDate != today
     }
+    private val _isUpdateAvailable = MutableStateFlow(false)
+    val isUpdateAvailable: StateFlow<Boolean> = _isUpdateAvailable
+    private var remoteVersion: Int? = null
 
     fun checkForUpdates(currentVersionCode: Int) {
         viewModelScope.launch {
-            val remoteVersion = updateRepository.loadRemoteVersion()
-                ?: return@launch
-
-            if (remoteVersion > currentVersionCode) {
-                _uiState.value = KerilUiState.UpdateAvailable(remoteVersion)
-            }
+            val version = updateRepository.loadRemoteVersion() ?: return@launch
+            remoteVersion = version
+            _isUpdateAvailable.value = version > currentVersionCode
         }
+    }
+
+    fun getApkUrl(): String? {
+        val version = remoteVersion ?: return null
+        return "https://github.com/solfylt2210/pelmeni-segodnya/releases/download/v$version/app-release.apk"
     }
     @RequiresApi(Build.VERSION_CODES.O)
     fun onButtonClicked() {
         val lastTimestamp = repository.getLastTimestamp()
         val now = Instant.now()
-        if (!canShowResultToday(lastTimestamp, now)) {
-            _uiState.value = KerilUiState.AlreadyUsedToday(
-                imageResId = R.drawable.slot_main,
-                message = "Я сегодня уже всё сказал"
-            )
-            return
-        }
+//        if (!canShowResultToday(lastTimestamp, now)) {
+//            _uiState.value = KerilUiState.AlreadyUsedToday(
+//                imageResId = R.drawable.slot_main,
+//                message = "Я сегодня уже всё сказал"
+//            )
+//            return
+//        }
         _uiState.value = KerilUiState.Loading(images.random())
 
         viewModelScope.launch {
@@ -99,12 +115,14 @@ class KerilViewModel(private val updateRepository: UpdateRepository, private val
 
             val finalImage = images.random()
             val phrase = repository.getRandomPhrase()
+            val endingPhrase = repository.getRandomEndingPhrase()
 
             repository.saveLastTimestamp(now.toEpochMilli())
 
             _uiState.value = KerilUiState.Result(
                 imageResId = finalImage,
-                phrase = phrase
+                phrase = phrase,
+                endingPhrase = endingPhrase
             )
         }
     }

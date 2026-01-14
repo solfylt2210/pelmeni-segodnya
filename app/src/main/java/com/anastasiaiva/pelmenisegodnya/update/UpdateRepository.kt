@@ -18,10 +18,7 @@ class UpdateRepository {
     }
 
     private fun parseVersion(text: String): Int? {
-        // ожидаем формат: version=2
-        val parts = text.split("=")
-        if (parts.size != 2) return null
-        return parts[1].trim().toIntOrNull()
+        return text.trim().toIntOrNull()
     }
 
     companion object {

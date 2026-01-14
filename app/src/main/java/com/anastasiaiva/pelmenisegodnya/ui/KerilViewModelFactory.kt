@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.anastasiaiva.pelmenisegodnya.repository.KerilRepository
 import com.anastasiaiva.pelmenisegodnya.update.UpdateRepository
 
+@Suppress("UNCHECKED_CAST")
 class KerilViewModelFactory(
     private val repository: KerilRepository, private val updateRepository: UpdateRepository
 ) : ViewModelProvider.Factory {
